@@ -1,8 +1,31 @@
-var chatId =  Math.floor((Math.random() * 100) + 1);
-document.addEventListener("DOMContentLoaded", function() {
+// document.addEventListener("DOMContentLoaded", function() {
+function get(name) {
+    if (name = (new RegExp('[?&]' + encodeURIComponent(name) + '=([^&]*)')).exec(location.search))
+        return decodeURIComponent(name[1]);
+}
+
+let chatId;
+const brkrAddr = get('bserver');
+
+
+function getChatId() {
+    if (!chatId) {
+
+        let elementVal = document.getElementById("chatId").value;
+        if (elementVal) {
+            chatId = +elementVal;
+        } else {
+            chatId = "123123"
+        }
+        console.log("chatId =", chatId)
+    }
+
+    return chatId;
+}
+
     var socket = new WebSocket("ws://localhost:8080/websocket");
     var chatBox = document.getElementById("chatBox");
-    console.log("the chatId is : "+chatId);
+    console.log("the chatId is : "+getChatId());
 
     // Connection opened
     socket.onopen = function(event) {
@@ -48,4 +71,26 @@ document.addEventListener("DOMContentLoaded", function() {
         // Clear the input field
         input.value = "";
     });
-});
+
+
+function createRoom() {
+    sendKafkaMessage({
+        id: 'CREATE_STREAM',
+        actionId: 1001,
+        chatId: getChatId(),
+        brokerAddress: brkrAddr/*'192.168.112.66:9093'*/,
+
+    });
+
+    function sendKafkaMessage(message) {
+        if (socket.readyState !== socket.OPEN) {
+            console.warn("[sendMessage] Skip, WebSocket session isn't open", message.id, message.actionId);
+            return;
+        }
+
+        const jsonMessage = JSON.stringify(message);
+        console.log("[sendMessage] message: " + jsonMessage);
+        socket.send(jsonMessage);
+    }
+}
+// });

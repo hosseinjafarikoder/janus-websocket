@@ -1,5 +1,6 @@
 package videocall.janus.januswebsocket;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.extensions.IExtension;
@@ -18,6 +19,8 @@ public class JanusConnection {
 
 
     private static WebSocketClient clientWs;
+    public static volatile Long janusSessionId;
+
 
     static {
         init();
@@ -37,7 +40,9 @@ public class JanusConnection {
             }
 
             @Override
-            public void onMessage(String s) {
+            public void onMessage(String message) {
+                JsonNode node = JsonUtil.getJsonObject(message);
+                JanusConnection.janusSessionId = Long.parseLong(node.get("data").get("id").asText());
 
             }
 
@@ -57,5 +62,9 @@ public class JanusConnection {
 
         clientWs.send(JsonUtil.getJson(JanusMsgUtil.createSession()));
         logger.info("JsonUtil.getJson : "+JsonUtil.getJson((JanusMsgUtil.createSession())));
+    }
+
+    public static void sendToJanus(String message) {
+        clientWs.send(message);
     }
 }

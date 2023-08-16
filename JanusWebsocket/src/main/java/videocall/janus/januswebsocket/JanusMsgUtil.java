@@ -13,4 +13,14 @@ public class JanusMsgUtil {
         janus.setTransaction("create-session");
         return janus;
     }
+
+    public static Janus createAttachCreateRoom(String chatId, String transaction) {
+        Janus janus = new Janus();
+        janus.setJanus("attach");
+        janus.setSession_id(JanusConnection.janusSessionId);
+        janus.setPlugin("janus.plugin.videoroom");
+        janus.setTransaction(transaction);
+//        logJanusJson(janus);
+        return janus;
+    }
 }
